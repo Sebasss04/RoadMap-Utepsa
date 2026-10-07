@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "119100023076",
+    "project_id": "roadmap-utepsa",
+    "storage_bucket": "roadmap-utepsa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119100023076:android:1eea4aaea39fe4206353b1",
+        "android_client_info": {
+          "package_name": "com.example.roadmaputepsa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "119100023076-p8hba8fv3gptqk8ai3ecufulgn8ufdb0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.roadmaputepsa",
+            "certificate_hash": "f38f64f17cce9f4883eacee21c639b80f4d61c2d"
+          }
+        },
+        {
+          "client_id": "119100023076-1a5d5ju5gn1bkagvt9ejh3a89hc2q3a5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6ODqQG_hAqbmQivm--zpUZ8eKtjABSWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "119100023076-1a5d5ju5gn1bkagvt9ejh3a89hc2q3a5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
