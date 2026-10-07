@@ -18,7 +18,10 @@ fun LoginScreen(
 
     val scope = rememberCoroutineScope()
 
-    val googleAuthHelper = remember {
+    var errorMensaje by remember { mutableStateOf<String?>(null) }
+    var cargando by remember { mutableStateOf(false) }
+
+    val googleAuthHelper = remember(context) {
         GoogleAuthHelper(context)
     }
     Column(
@@ -30,7 +33,7 @@ fun LoginScreen(
     ) {
 
         Text(
-            text = "Mi Aplicación",
+            text = "RoadMap Utepsa",
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -45,26 +48,36 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                // Google
+                errorMensaje = null
+                cargando = true
                 scope.launch {
-                    val result = googleAuthHelper.signInWithGoogle()
-                    result
-                        .onSuccess { nombre ->
-                            println(
-                                "Login exitoso: $nombre"
-                            )
-                        }
-                        .onFailure { error ->
-                            println(
-                                "Error Google: ${error.message}"
-                            )
-                        }
+                    try {
+                        val result = googleAuthHelper.signInWithGoogle()
+                        result
+                            .onSuccess { nombre ->
+                                println(
+                                    "Login exitoso: $nombre"
+                                )
+                                onLoginSuccess()
+                            }
+                            .onFailure { error ->
+                                errorMensaje = error.message ?: "No se pudo iniciar sesión"
+                            }
+                    } finally {
+                        cargando = false
+                    }
                 }
             },
+            enabled = !cargando,
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            Text("Continuar con Google")
+            Text(if (cargando) "Iniciando sesión…" else "Continuar con Google")
+        }
+
+        errorMensaje?.let { mensaje ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = mensaje, color = MaterialTheme.colorScheme.error)
         }
     }
 }
