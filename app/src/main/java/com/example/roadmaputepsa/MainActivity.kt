@@ -22,7 +22,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         FirebaseApp.initializeApp(this )
         setContent {
-            AppNavigation()
+            RoadMapUtepsaTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
+                    androidx.compose.foundation.layout.Box(Modifier.padding(padding)) {
+                        AppNavigation()
+                    }
+                }
+            }
         }
     }
 }

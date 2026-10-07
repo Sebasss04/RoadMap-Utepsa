@@ -9,6 +9,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.CancellationException
 import com.example.roadmaputepsa.R
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 
@@ -84,6 +85,8 @@ class GoogleAuthHelper (private val context: Context){
                 )
             }
 
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: GoogleIdTokenParsingException) {
 
             Result.failure(e)
