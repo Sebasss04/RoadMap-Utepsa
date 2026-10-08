@@ -72,9 +72,9 @@ fun LoginScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("Ingresar con huella / biometría") }
+        ) { Text("Desbloquear con biometría o PIN") }
         if (!sesionDisponible) {
-            Text("Primero inicia sesión con Google para usar la biometría.")
+            Text("Primero inicia sesión con Google para usar el desbloqueo del teléfono.")
         }
         if (cargando) { CircularProgressIndicator() }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
