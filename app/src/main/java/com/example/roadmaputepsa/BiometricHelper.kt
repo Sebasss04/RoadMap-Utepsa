@@ -1,4 +1,5 @@
 package com.example.roadmaputepsa
+import android.os.Build
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.FragmentActivity
@@ -13,24 +14,26 @@ fun autenticarConBiometria(
 
     val biometricManager = BiometricManager.from(activity)
 
-    val resultado = biometricManager.canAuthenticate(
+    // Android 10 y anteriores no admiten STRONG | DEVICE_CREDENTIAL.
+    val biometria = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         BiometricManager.Authenticators.BIOMETRIC_STRONG
-    )
+    } else {
+        BiometricManager.Authenticators.BIOMETRIC_WEAK
+    }
+    val autenticadores = biometria or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+    val resultado = biometricManager.canAuthenticate(autenticadores)
 
     if (
         resultado != BiometricManager.BIOMETRIC_SUCCESS
     ) {
-        onError("El dispositivo no tiene una autenticación disponible.")
+        onError("Configura una huella, un PIN, patrón o contraseña en los ajustes del teléfono, o inicia sesión con Google.")
         return
     }
 
     val promptInfo = BiometricPrompt.PromptInfo.Builder()
         .setTitle("Autenticación")
-        .setSubtitle("Confirma tu identidad")
-        .setAllowedAuthenticators(
-            BiometricManager.Authenticators.BIOMETRIC_STRONG
-        )
-        .setNegativeButtonText("Cancelar")
+        .setSubtitle("Usa tu biometría, PIN, patrón o contraseña del teléfono")
+        .setAllowedAuthenticators(autenticadores)
         .build()
 
     val biometricPrompt = BiometricPrompt(
