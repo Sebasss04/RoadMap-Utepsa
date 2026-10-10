@@ -2,54 +2,38 @@ package com.example.roadmaputepsa.services
 
 import com.example.roadmaputepsa.data.Persona
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firebase.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 class PersonaService {
 
-    private val auth =
-        FirebaseAuth.getInstance()
-
-    private val firestore =
-        FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
 
     suspend fun registrarPersonaDesdeGoogle(): Result<Unit> {
-
         return try {
 
-            val user =
-                auth.currentUser
-                    ?: throw Exception(
-                        "No existe un usuario autenticado"
-                    )
+            val user = auth.currentUser
+                ?: throw Exception("No existe un usuario autenticado")
 
-            val uid =
-                user.uid
+            val persona = Persona(
+                uid = user.uid,
+                nombre = user.displayName ?: "",
+                email = user.email ?: "",
+                fotoUrl = user.photoUrl?.toString() ?: "",
+                fechaRegistro = System.currentTimeMillis()
+            )
 
-            val referencia =
-                firestore
-                    .collection("personas")
-                    .document(uid)
-
-            val documento =
-                referencia.get().await()
-
-            if (!documento.exists()) {
-
-                val cliente = Persona(
-                    uid = uid,
-                    nombre = user.displayName?: "",
-                    email = user.email?: "",
-                    fotoUrl = user.photoUrl?.toString() ?: "",
-                    fechaRegistro = System.currentTimeMillis()
-                )
-                referencia.set(cliente).await()
-            }
+            firestore
+                .collection("personas")
+                .document(user.uid)
+                .set(persona, SetOptions.merge())
+                .await()
 
             Result.success(Unit)
 
         } catch (e: Exception) {
-
             Result.failure(e)
         }
     }
