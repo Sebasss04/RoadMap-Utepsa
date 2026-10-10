@@ -1,44 +1,33 @@
 package com.example.roadmaputepsa
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.fragment.app.FragmentActivity
+import com.example.roadmaputepsa.interfaz.audio.ReproductorAudio
 import com.example.roadmaputepsa.navigation.AppNavigation
 import com.example.roadmaputepsa.ui.theme.RoadMapUtepsaTheme
-import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        FirebaseApp.initializeApp(this )
+        FirebaseApp.initializeApp(this)
         setContent {
-            AppNavigation()
+            Column(
+                modifier = Modifier.fillMaxSize().statusBarsPadding()
+            ) {
+                ReproductorAudio(
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            RoadMapUtepsaTheme { AppNavigation() }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    RoadMapUtepsaTheme {
-        Greeting("Android")
     }
 }

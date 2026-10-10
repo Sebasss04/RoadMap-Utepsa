@@ -40,14 +40,18 @@ android {
 }
 
 dependencies {
-    // Firebase Authentication
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 
     // Google Sign-In
     implementation("androidx.credentials:credentials:1.5.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+    implementation("androidx.fragment:fragment-ktx:1.8.9")
 
     // Biometría
     implementation("androidx.biometric:biometric:1.2.0-alpha05")
@@ -63,9 +67,15 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
 
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
     // Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // Reproductor multimedia
+    implementation("androidx.media3:media3-exoplayer:1.8.0")
+    implementation("androidx.media3:media3-common:1.8.0")
 
     // Pruebas unitarias
     testImplementation(libs.junit)
