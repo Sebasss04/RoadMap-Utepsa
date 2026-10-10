@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.roadmaputepsa.services.GoogleAuthHelper
+import com.example.roadmaputepsa.services.PersonaService
 import kotlinx.coroutines.launch
 
 @Composable
@@ -15,12 +16,24 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit
 ) {
     val context = LocalContext.current
-
     val scope = rememberCoroutineScope()
 
     val googleAuthHelper = remember {
         GoogleAuthHelper(context)
     }
+
+    val personaService = remember {
+        PersonaService()
+    }
+
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
+    var errorMessage by remember {
+        mutableStateOf<String?>(null)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -44,27 +57,53 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
+            enabled = !isLoading,
             onClick = {
-                // Google
                 scope.launch {
-                    val result = googleAuthHelper.signInWithGoogle()
-                    result
+                    isLoading = true
+                    errorMessage = null
+
+                    googleAuthHelper
+                        .signInWithGoogle()
                         .onSuccess { nombre ->
-                            println(
-                                "Login exitoso: $nombre"
-                            )
+
+                            println("Login exitoso: $nombre")
+
+                            personaService
+                                .registrarPersonaDesdeGoogle()
+                                .onSuccess {
+                                    println("Persona registrada en Firestore")
+                                    onLoginSuccess()
+                                }
+                                .onFailure { error ->
+                                    errorMessage =
+                                        "Error al registrar persona: ${error.message}"
+                                }
                         }
                         .onFailure { error ->
-                            println(
+                            errorMessage =
                                 "Error Google: ${error.message}"
-                            )
                         }
+
+                    isLoading = false
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Text("Continuar con Google")
+            }
+        }
 
-            Text("Continuar con Google")
+        errorMessage?.let { message ->
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
