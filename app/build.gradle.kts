@@ -72,6 +72,12 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    //reproductor de multimeda
+    implementation("androidx.media3:media3-exoplayer:1.8.0")
+    implementation("androidx.media3:media3-common:1.8.0")
+
+    //FireStore
+    implementation(platform("com.google.firebase:firebase-bom:VERSION"))
     // Pruebas unitarias
     testImplementation(libs.junit)
 
