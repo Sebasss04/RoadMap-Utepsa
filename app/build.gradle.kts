@@ -40,9 +40,10 @@ android {
 }
 
 dependencies {
-    // Firebase Authentication
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 
     // Google Sign-In
     implementation("androidx.credentials:credentials:1.5.0")
@@ -72,12 +73,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
-    //reproductor de multimeda
+    // Reproductor multimedia
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-common:1.8.0")
 
-    //FireStore
-    implementation(platform("com.google.firebase:firebase-bom:VERSION"))
     // Pruebas unitarias
     testImplementation(libs.junit)
 
