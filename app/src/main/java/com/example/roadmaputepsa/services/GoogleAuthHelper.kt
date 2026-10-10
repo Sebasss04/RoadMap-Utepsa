@@ -9,6 +9,8 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.CancellationException
+import androidx.credentials.ClearCredentialStateRequest
 import com.example.roadmaputepsa.R
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 
@@ -16,6 +18,10 @@ class GoogleAuthHelper (private val context: Context){
     private val auth = FirebaseAuth.getInstance()
     private val credentialManager =
         CredentialManager.create(context)
+    suspend fun clearCredentialState() {
+        credentialManager.clearCredentialState(ClearCredentialStateRequest())
+    }
+
     suspend fun signInWithGoogle(): Result<String> {
 
         return try {
@@ -87,6 +93,9 @@ class GoogleAuthHelper (private val context: Context){
         } catch (e: GoogleIdTokenParsingException) {
 
             Result.failure(e)
+
+        } catch (e: CancellationException) {
+            throw e
 
         } catch (e: Exception) {
 
