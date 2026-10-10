@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.example.roadmaputepsa.autenticarConBiometria
 import com.example.roadmaputepsa.services.GoogleAuthHelper
+import com.example.roadmaputepsa.services.PersonaService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -20,63 +21,153 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val googleAuthHelper = remember(context) { GoogleAuthHelper(context) }
-    var cargando by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+
+    val googleAuthHelper = remember(context) {
+        GoogleAuthHelper(context)
+    }
+
+    val personaService = remember {
+        PersonaService()
+    }
+
+    var cargando by remember {
+        mutableStateOf(false)
+    }
+
+    var error by remember {
+        mutableStateOf<String?>(null)
+    }
 
     Column(
-        modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(32.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("RoadMap UTEPSA", style = MaterialTheme.typography.headlineMedium)
+
+        Text(
+            "RoadMap UTEPSA",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
         Spacer(Modifier.height(40.dp))
-        Text("Iniciar sesión", style = MaterialTheme.typography.titleLarge)
+
+        Text(
+            "Iniciar sesión",
+            style = MaterialTheme.typography.titleLarge
+        )
+
         Spacer(Modifier.height(24.dp))
+
         Button(
             enabled = !cargando,
             onClick = {
                 cargando = true
                 error = null
+
                 scope.launch {
                     try {
                         googleAuthHelper.clearCredentialState()
-                        googleAuthHelper.signInWithGoogle()
-                            .onSuccess { onLoginSuccess() }
-                            .onFailure { error = it.localizedMessage ?: "No se pudo iniciar sesión" }
+
+                        googleAuthHelper
+                            .signInWithGoogle()
+                            .onSuccess {
+
+                                personaService
+                                    .registrarPersonaDesdeGoogle()
+                                    .onFailure { firestoreError ->
+                                        println(
+                                            "Firestore: ${firestoreError.message}"
+                                        )
+                                    }
+
+                                onLoginSuccess()
+                            }
+                            .onFailure {
+                                error =
+                                    it.localizedMessage
+                                        ?: "No se pudo iniciar sesión"
+                            }
+
                     } catch (e: CancellationException) {
                         throw e
+
                     } catch (e: Exception) {
-                        error = e.localizedMessage ?: "No se pudo iniciar sesión"
+                        error =
+                            e.localizedMessage
+                                ?: "No se pudo iniciar sesión"
+
                     } finally {
                         cargando = false
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("Continuar con Google") }
+        ) {
+            Text("Continuar con Google")
+        }
+
         Spacer(Modifier.height(24.dp))
+
         Button(
             enabled = sesionDisponible && !cargando,
             onClick = {
-                val activity = context as? FragmentActivity
+
+                val activity =
+                    context as? FragmentActivity
+
                 if (activity == null) {
-                    error = "No se puede abrir la autenticación biométrica"
+
+                    error =
+                        "No se puede abrir la autenticación biométrica"
+
                 } else {
+
                     cargando = true
                     error = null
-                    autenticarConBiometria(activity,
-                        onSuccess = { cargando = false; onLoginSuccess() },
-                        onError = { cargando = false; error = it }
+
+                    autenticarConBiometria(
+                        activity = activity,
+
+                        onSuccess = {
+                            cargando = false
+                            onLoginSuccess()
+                        },
+
+                        onError = {
+                            cargando = false
+                            error = it
+                        }
                     )
                 }
             },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("Desbloquear con biometría o PIN") }
-        if (!sesionDisponible) {
-            Text("Primero inicia sesión con Google para usar el desbloqueo del teléfono.")
+        ) {
+            Text(
+                "Desbloquear con biometría o PIN"
+            )
         }
-        if (cargando) { CircularProgressIndicator() }
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+
+        if (!sesionDisponible) {
+            Text(
+                "Primero inicia sesión con Google para usar el desbloqueo del teléfono."
+            )
+        }
+
+        if (cargando) {
+            Spacer(Modifier.height(16.dp))
+            CircularProgressIndicator()
+        }
+
+        error?.let {
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }
