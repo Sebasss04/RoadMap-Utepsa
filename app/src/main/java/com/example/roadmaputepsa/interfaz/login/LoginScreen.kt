@@ -73,12 +73,16 @@ fun LoginScreen(
                                 .registrarPersonaDesdeGoogle()
                                 .onSuccess {
                                     println("Persona registrada en Firestore")
-                                    onLoginSuccess()
                                 }
                                 .onFailure { error ->
-                                    errorMessage =
-                                        "Error al registrar persona: ${error.message}"
+                                    println(
+                                        "No se pudo guardar la persona en Firestore: ${error.message}"
+                                    )
                                 }
+
+                            // El login ya fue correcto. Firestore no debe
+                            // bloquear el acceso a la app si sus reglas fallan.
+                            onLoginSuccess()
                         }
                         .onFailure { error ->
                             errorMessage =
