@@ -27,22 +27,37 @@ La colección usada es `personas` (plural), coherente con
 `firestore.rules`. Esas reglas deben **publicarse en Firebase**; dejarlas
 en el repositorio no las despliega.
 
-## Fotos: Cloudinary opcional
+## Cloudinary (código de la ingeniera)
 
-Se incluye la funcionalidad de subir la foto de Google a Cloudinary y
-guardar la URL segura en Firestore. No se utiliza la cuenta de Cloudinary de
-la docente. Crea tu propio *unsigned upload preset* en Cloudinary y agrega
-estas propiedades a tu archivo local `~/.gradle/gradle.properties`
-(en Windows: `C:\\Users\\TU_USUARIO\\.gradle\\gradle.properties`):
+La implementación de clase está ahora **en `services/PersonaService.kt`**,
+con el `companion object` y las funciones `descargarFotoGoogle` y
+`subirFotoCloudinary`. No hay que pegar nada adicional en Gradle ni
+configurar un segundo uploader. `CloudinaryUploader.kt` se eliminó
+para evitar mantener dos implementaciones.
 
-```properties
-CLOUDINARY_CLOUD_NAME=tu_cloud_name
-CLOUDINARY_UPLOAD_PRESET=tu_unsigned_preset
+Los valores proporcionados en clase son:
+
+```kotlin
+private const val CLOUD_NAME = "dzhwqsqqk"
+private const val UPLOAD_PRESET = "persona_android"
 ```
 
-No subas secretos ni API Secret a GitHub. Sin configurar Cloudinary, el
-registro sigue funcionando y `fotoUrl` guarda el enlace original de Google.
-La subida limita las imágenes a 5 MB y una falla de foto no bloquea el login.
+**Advertencia:** estos identificadores apuntan a la cuenta de Cloudinary
+entregada en clase. No son claves secretas, pero las fotografías que subas
+se enviarán a esa cuenta. Utilízala solo si tienes autorización de la
+propietaria; para usar tu propia cuenta, sustituye ambos valores.
+
+Durante un login de Google, `PersonaService` registra el usuario en
+`personas/{uid}` de **tu** Firestore, descarga la foto de Google (máximo 5 MB),
+la sube mediante HTTP multipart y guarda la URL HTTPS devuelta en `fotoUrl`.
+Para mantener la coherencia con `firestore.rules`, se usa la colección
+`personas` en plural (en el proyecto de la ingeniera se llama `persona`).
+Las reglas de Firestore deben estar publicadas, no solo guardadas en GitHub.
+
+Si Cloudinary rechaza el preset o la imagen, se registra el error en Logcat
+bajo `FOTO_CLOUDINARY`/`CLOUDINARY`, pero se conserva la cuenta y el enlace
+original de Google. El preset debe existir y estar habilitado para subida
+unsigned. No hay prueba de extremo a extremo sin iniciar sesión en el teléfono.
 
 ## Pruebas pendientes en Android Studio
 

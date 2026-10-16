@@ -13,11 +13,6 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        // Set these in the local ~/.gradle/gradle.properties, not in GitHub.
-        val cloud = providers.gradleProperty("CLOUDINARY_CLOUD_NAME").orElse("").get()
-        val preset = providers.gradleProperty("CLOUDINARY_UPLOAD_PRESET").orElse("").get()
-        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloud\"")
-        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"$preset\"")
     }
     buildTypes { release { optimization { enable = false } } }
     compileOptions {
@@ -26,7 +21,6 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true
     }
 }
 dependencies {
