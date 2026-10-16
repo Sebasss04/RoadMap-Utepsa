@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.roadmaputepsa.services.PersonaService
 import com.example.roadmaputepsa.services.TokenNotificaciones
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CancellationException
@@ -44,6 +45,18 @@ fun HomeScreen(usuario: FirebaseUser, onLogout: () -> Unit) {
     val solicitarPermiso = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { concedido -> permiteNotificaciones = concedido }
+
+    // Registrar los datos y la foto después de mostrar Home.
+    // Una falla o demora de Cloudinary no bloqueará el inicio de sesión.
+    LaunchedEffect(usuario.uid) {
+        try {
+            PersonaService().registrarPersonaDesdeGoogle().getOrThrow()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("PERSONA_FIRESTORE", "No se pudo registrar el perfil después del login", e)
+        }
+    }
 
     // Firebase puede emitir el token antes de que el usuario haya iniciado sesión.
     // Volver a obtenerlo al entrar a Home permite asociarlo al documento correcto.

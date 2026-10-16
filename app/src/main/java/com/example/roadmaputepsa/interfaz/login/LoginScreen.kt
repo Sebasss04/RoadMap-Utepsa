@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.roadmaputepsa.services.GoogleAuthHelper
-import com.example.roadmaputepsa.services.PersonaService
 import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -35,7 +34,6 @@ fun LoginScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val googleAuthHelper = remember(context) { GoogleAuthHelper(context) }
-    val personaService = remember { PersonaService() }
     var cargando by remember { mutableStateOf(false) }
     var mensajeError by remember { mutableStateOf<String?>(null) }
 
@@ -57,25 +55,10 @@ fun LoginScreen(
                 onLoginStarted()
                 scope.launch {
                     try {
-                        // No limpiar credenciales aquí: puede interrumpir el selector.
+                        // Firebase Auth es suficiente para acceder al Home.
+                        // El registro de perfil/foto se hace después, sin bloquear el login.
                         googleAuthHelper.signInWithGoogle().getOrThrow()
-                        Log.d("GOOGLE_LOGIN", "Firebase Auth correcto")
-                        
-                        // Google Auth y Firestore son operaciones distintas.
-                        // Un error de Firestore o Cloudinary no invalida el acceso.
-                        try {
-                            personaService.registrarPersonaDesdeGoogle().getOrThrow()
-                        } catch (e: CancellationException) {
-                            throw e
-                        } catch (e: Exception) {
-                            Log.e(
-                                "PERSONA_FIRESTORE",
-                                "Google inició sesión, pero falló guardar el perfil",
-                                e
-                            )
-                        }
-
-                        Log.d("GOOGLE_LOGIN", "Acceso autorizado para el usuario")
+                        Log.d("GOOGLE_LOGIN", "Autenticación Google/Firebase completada")
                         onLoginSuccess()
                     } catch (e: CancellationException) {
                         onLoginFailed()

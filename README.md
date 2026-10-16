@@ -117,3 +117,14 @@ Firebase y Android SDK.
 
 Después de sincronizar: ejecutar `gradlew.bat :app:assembleDebug` y probar
 Google en dispositivo. Esta rama aún no cuenta con pruebas Android reales.
+
+## Registro de perfil después del login
+
+`LoginScreen.kt` ahora ejecuta solo Google/Firebase Authentication y
+abre Home tan pronto como obtiene un usuario autenticado. `HomeScreen.kt`
+inicia el registro de Firestore y la subida de foto a Cloudinary con
+`LaunchedEffect(usuario.uid)`; fallos o esperas de Cloudinary no impiden
+que aparezca Home. La actualización del perfil puede tardar y se cancela
+si la pantalla sale de composición. Revisar errores `PERSONA_FIRESTORE`
+y `FOTO_CLOUDINARY` en Logcat. No se cambió el proyecto Firebase ni el
+package Android.
