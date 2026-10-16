@@ -38,14 +38,14 @@ para evitar mantener dos implementaciones.
 Los valores proporcionados en clase son:
 
 ```kotlin
-private const val CLOUD_NAME = "dzhwqsqqk"
+private const val CLOUD_NAME = "r8iydbsg"
 private const val UPLOAD_PRESET = "persona_android"
 ```
 
-**Advertencia:** estos identificadores apuntan a la cuenta de Cloudinary
-entregada en clase. No son claves secretas, pero las fotografías que subas
-se enviarán a esa cuenta. Utilízala solo si tienes autorización de la
-propietaria; para usar tu propia cuenta, sustituye ambos valores.
+El **Cloud name** es el de tu propia cuenta que se ve en la captura. El nombre
+`persona_android` es el del preset de clase: **debes crear un preset de tipo
+Unsigned con ese mismo nombre en tu cuenta** para que la subida funcione.
+No necesitas copiar las claves API Secret al repositorio ni a la app.
 
 Durante un login de Google, `PersonaService` registra el usuario en
 `personas/{uid}` de **tu** Firestore, descarga la foto de Google (máximo 5 MB),
@@ -58,6 +58,34 @@ Si Cloudinary rechaza el preset o la imagen, se registra el error en Logcat
 bajo `FOTO_CLOUDINARY`/`CLOUDINARY`, pero se conserva la cuenta y el enlace
 original de Google. El preset debe existir y estar habilitado para subida
 unsigned. No hay prueba de extremo a extremo sin iniciar sesión en el teléfono.
+
+## Firebase Cloud Messaging (FCM)
+
+Se incorporó Firebase Messaging a partir del último commit de la ingeniera,
+adaptando el servicio a `com.example.roadmaputepsa` y a `personas/{uid}`.
+
+- `services/AppFirebaseMessagingService.kt`: maneja los nuevos tokens FCM y
+  los mensajes de datos o notificaciones recibidos con la app en primer plano.
+- `services/TokenNotificaciones.kt`: asocia el token a `fcmToken` del usuario
+  autenticado en Cloud Firestore. También recupera el token al entrar a Home,
+  porque `onNewToken()` puede ejecutarse antes del inicio de sesión.
+- `AndroidManifest.xml`: registra el servicio y el permiso
+  `POST_NOTIFICATIONS`.
+- `HomeScreen.kt`: botón para permitir notificaciones en Android 13+.
+- `res/drawable/ic_stat_notification.xml`: icono para las notificaciones.
+
+En Android 13 o posterior, inicia sesión y pulsa **Permitir notificaciones**.
+Luego revisa `personas/{uid}.fcmToken` en Firestore y prueba una notificación
+de Firebase Cloud Messaging desde la consola de **tu proyecto Firebase**.
+Una notificación de tipo *notification* puede ser mostrada automáticamente
+por Android cuando la app está en segundo plano, en lugar de pasar por
+`onMessageReceived`. La entrega push depende de que haya conectividad y
+servicios FCM disponibles en el dispositivo.
+
+Los tokens son identificadores de entrega asociados a dispositivos:
+mantén privadas las reglas de Firestore y no compartas tokens públicamente.
+Para producción, implementa la desvinculación/invalidación del token al
+cerrar sesión para evitar avisos del usuario anterior en dispositivos compartidos.
 
 ## Pruebas pendientes en Android Studio
 

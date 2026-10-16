@@ -18,10 +18,10 @@ class PersonaService {
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
 
-    // Datos entregados en clase: estas fotos se subirán a la cuenta indicada.
-    // El upload preset debe permitir subidas sin firma ("unsigned").
+    // Cloud name tomado de la cuenta propia mostrada por el usuario.
+    // Crear en esta cuenta un unsigned upload preset llamado persona_android.
     companion object {
-        private const val CLOUD_NAME = "dzhwqsqqk"
+        private const val CLOUD_NAME = "r8iydbsg"
         private const val UPLOAD_PRESET = "persona_android"
         private const val MAX_FOTO_BYTES = 5 * 1024 * 1024
     }
