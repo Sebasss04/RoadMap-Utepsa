@@ -3,6 +3,7 @@ package com.example.roadmaputepsa
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,14 +21,14 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         FirebaseApp.initializeApp(this)
         setContent {
-            Column(
-                modifier = Modifier.fillMaxSize().statusBarsPadding()
-            ) {
-                ReproductorAudio(
-                    modifier = Modifier.fillMaxWidth()
-                )
+            RoadMapUtepsaTheme {
+                Column(Modifier.fillMaxSize().statusBarsPadding()) {
+                    ReproductorAudio(Modifier.fillMaxWidth())
+                    Box(Modifier.weight(1f).fillMaxWidth()) {
+                        AppNavigation()
+                    }
+                }
             }
-            RoadMapUtepsaTheme { AppNavigation() }
         }
     }
 }
