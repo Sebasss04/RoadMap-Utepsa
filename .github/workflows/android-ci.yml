@@ -23,8 +23,13 @@ jobs:
       # La acción setup-android@v3 intenta instalar 'tools', paquete retirado.
       - name: Instalar Android 37
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-37" "build-tools;37.0.0"
+          SDKMGR="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMGR" ]; then
+            SDKMGR="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)"
+          fi
+          test -x "$SDKMGR"
+          yes | "$SDKMGR" --licenses >/dev/null || true
+          "$SDKMGR" "platforms;android-37" "build-tools;37.0.0"
       - uses: gradle/actions/setup-gradle@v4
       - name: Compilar y ejecutar tests
         run: ./gradlew --no-daemon --stacktrace :app:assembleDebug :app:testDebugUnitTest
