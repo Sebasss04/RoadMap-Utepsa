@@ -19,9 +19,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
-      - uses: android-actions/setup-android@v3
+      # ubuntu-latest trae Android SDK y sdkmanager preinstalados.
+      # La acción setup-android@v3 intenta instalar 'tools', paquete retirado.
       - name: Instalar Android 37
-        run: sdkmanager "platforms;android-37" "build-tools;37.0.0"
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-37" "build-tools;37.0.0"
       - uses: gradle/actions/setup-gradle@v4
       - name: Compilar y ejecutar tests
         run: ./gradlew --no-daemon --stacktrace :app:assembleDebug :app:testDebugUnitTest
