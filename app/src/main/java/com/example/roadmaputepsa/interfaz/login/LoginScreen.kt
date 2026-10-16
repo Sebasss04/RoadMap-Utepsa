@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.roadmaputepsa.services.GoogleAuthHelper
 import com.example.roadmaputepsa.services.PersonaService
+import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -56,16 +57,33 @@ fun LoginScreen(
                 onLoginStarted()
                 scope.launch {
                     try {
-                        googleAuthHelper.clearCredentialState()
+                        // No limpiar credenciales aquí: puede interrumpir el selector.
                         googleAuthHelper.signInWithGoogle().getOrThrow()
-                        personaService.registrarPersonaDesdeGoogle().getOrThrow()
+                        Log.d("GOOGLE_LOGIN", "Firebase Auth correcto")
+                        
+                        // Google Auth y Firestore son operaciones distintas.
+                        // Un error de Firestore o Cloudinary no invalida el acceso.
+                        try {
+                            personaService.registrarPersonaDesdeGoogle().getOrThrow()
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            Log.e(
+                                "PERSONA_FIRESTORE",
+                                "Google inició sesión, pero falló guardar el perfil",
+                                e
+                            )
+                        }
+
+                        Log.d("GOOGLE_LOGIN", "Acceso autorizado para el usuario")
                         onLoginSuccess()
                     } catch (e: CancellationException) {
                         onLoginFailed()
                         throw e
                     } catch (e: Exception) {
+                        Log.e("GOOGLE_LOGIN", "Error iniciando sesión con Google", e)
                         mensajeError = e.localizedMessage
-                            ?: "No se pudo completar el inicio de sesión."
+                            ?: "No se pudo iniciar sesión con Google."
                         onLoginFailed()
                     } finally {
                         cargando = false

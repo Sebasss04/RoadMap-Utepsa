@@ -15,8 +15,11 @@ import com.example.roadmaputepsa.viewmodel.AuthViewModel
 fun AppNavigation() {
     val authViewModel: AuthViewModel = viewModel()
     val usuario = authViewModel.usuario
-    // No persistir el desbloqueo tras reiniciar el proceso.
+
+    // Primero verificar el dispositivo y después mostrar el acceso con Google.
+    // No enviar automáticamente a Home solo porque Firebase restauró otra sesión.
     var dispositivoVerificado by remember { mutableStateOf(false) }
+    var accesoGoogleConfirmado by remember { mutableStateOf(false) }
     var procesandoLogin by remember { mutableStateOf(false) }
 
     when {
@@ -24,13 +27,17 @@ fun AppNavigation() {
             onBiometricSuccess = { dispositivoVerificado = true }
         )
 
-        usuario == null || procesandoLogin -> LoginScreen(
+        !accesoGoogleConfirmado || usuario == null || procesandoLogin -> LoginScreen(
             onLoginStarted = { procesandoLogin = true },
-            onLoginSuccess = { procesandoLogin = false },
-            onLoginFailed = {
+            onLoginSuccess = {
+                accesoGoogleConfirmado = true
                 procesandoLogin = false
-                // Evitar Home si falla guardar la persona tras Firebase Auth.
-                authViewModel.cerrarSesion()
+            },
+            onLoginFailed = {
+                // Nunca cerrar Firebase por fallos de Firestore o del selector.
+                // Conservar el login visible hasta que Google se valide.
+                accesoGoogleConfirmado = false
+                procesandoLogin = false
             }
         )
 
@@ -38,6 +45,7 @@ fun AppNavigation() {
             usuario = usuario,
             onLogout = {
                 authViewModel.cerrarSesion()
+                accesoGoogleConfirmado = false
                 dispositivoVerificado = false
                 procesandoLogin = false
             }

@@ -8,7 +8,7 @@ El nombre de este repositorio no implica funcionalidades universitarias.
 
 1. Antes de Google o Home, el usuario desbloquea el dispositivo mediante
    huella, rostro compatible, PIN, patrón o contraseña.
-2. Si no existe sesión de Firebase, se muestra Google Sign-In.
+2. Después de verificar el dispositivo, se muestra Google Sign-In, incluso si Firebase restauró una sesión anterior. Se confirma una cuenta para esta apertura.
 3. `PersonaService` registra/actualiza `personas/{uid}` en Firestore. Se
    conserva la fecha original de registro y se respetan otros campos.
 4. El Home muestra nombre/correo y permite cerrar sesión.
@@ -98,3 +98,22 @@ Google → Firestore → Home; sesión guardada tras reinicio; cierre de sesión
 cancelar y reintentar el diálogo de desbloqueo; reproductor; foto con/sin
 Cloudinary. La revisión del código no sustituye una prueba real con
 Firebase y Android SDK.
+
+## Ajuste del acceso con Google
+
+- Se separa el acceso de Firebase Authentication del registro en Cloud Firestore.
+  Un error al guardar el perfil o subir su fotografía se registra en Logcat,
+  pero ya no provoca un cierre de sesión automático.
+- `LoginScreen` deja de llamar `clearCredentialState()` antes de abrir Google;
+  esa operación no es necesaria para iniciar sesión y puede fallar antes de
+  presentar el selector de cuentas.
+- Tras verificar el dispositivo se muestra la pantalla de Google. Una sesión
+  anterior de Firebase no salta directamente a Home.
+- Diagnóstico en Logcat: `GOOGLE_LOGIN` indica fallos del selector de cuentas
+  o Firebase Authentication; `PERSONA_FIRESTORE` errores al registrar datos.
+- Si aparece `ApiException: 10` o `DEVELOPER_ERROR`, comprueba SHA-1/SHA-256,
+  OAuth web y `google-services.json` en Firebase. Este problema no puede
+  repararse solo desde el código Kotlin.
+
+Después de sincronizar: ejecutar `gradlew.bat :app:assembleDebug` y probar
+Google en dispositivo. Esta rama aún no cuenta con pruebas Android reales.
