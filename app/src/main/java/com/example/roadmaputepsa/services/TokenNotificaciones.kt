@@ -3,6 +3,7 @@ package com.example.roadmaputepsa.services
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CancellationException
@@ -43,4 +44,31 @@ object TokenNotificaciones {
                 Log.e(TAG, "Error actualizando token FCM", error)
             }
     }
+    /**
+     * Desasocia el token actual antes del signOut.
+     * En equipos sin conexión se permite igualmente salir de la app.
+     */
+    suspend fun desvincularToken(uid: String) {
+        val auth = FirebaseAuth.getInstance()
+        if (auth.currentUser?.uid != uid) return
+
+        val messaging = FirebaseMessaging.getInstance()
+        val token = messaging.token.await()
+        if (auth.currentUser?.uid != uid) return
+
+        val ref = FirebaseFirestore.getInstance()
+            .collection("personas")
+            .document(uid)
+
+        try {
+            val guardado = ref.get().await().getString("fcmToken")
+            if (guardado == token && auth.currentUser?.uid == uid) {
+                ref.update("fcmToken", FieldValue.delete()).await()
+                Log.d(TAG, "Token FCM desvinculado de esta sesión")
+            }
+        } finally {
+            messaging.deleteToken().await()
+        }
+    }
+
 }

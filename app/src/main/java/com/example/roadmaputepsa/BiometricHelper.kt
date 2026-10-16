@@ -26,7 +26,7 @@ fun autenticarConBiometria(
     if (
         resultado != BiometricManager.BIOMETRIC_SUCCESS
     ) {
-        onError("Configura una huella, un PIN, patrón o contraseña en los ajustes del teléfono, o inicia sesión con Google.")
+        onError("Configura una huella, rostro o bloqueo de pantalla (PIN, patrón o contraseña) en los ajustes del teléfono.")
         return
     }
 
@@ -63,5 +63,9 @@ fun autenticarConBiometria(
         }
     )
 
-    biometricPrompt.authenticate(promptInfo)
+    try {
+        biometricPrompt.authenticate(promptInfo)
+    } catch (e: Exception) {
+        onError(e.localizedMessage ?: "No se pudo abrir la verificación del dispositivo")
+    }
 }

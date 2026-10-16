@@ -128,3 +128,17 @@ que aparezca Home. La actualización del perfil puede tardar y se cancela
 si la pantalla sale de composición. Revisar errores `PERSONA_FIRESTORE`
 y `FOTO_CLOUDINARY` en Logcat. No se cambió el proyecto Firebase ni el
 package Android.
+
+## Revisión de seguridad y compilación
+
+- Antes de cerrar sesión se intenta retirar el token de Firebase Cloud Messaging
+  almacenado en `personas/{uid}.fcmToken` y eliminarlo del dispositivo.
+  La operación tiene un plazo de 4 segundos y no impide cerrar sesión.
+- El esquema actual de `fcmToken` admite **un dispositivo por cuenta**. Para
+  admitir varios teléfonos conviene almacenar tokens por dispositivo.
+- `BiometricHelper.kt` devuelve un error controlado si no puede abrirse el
+  diálogo biométrico.
+- Se agrega `.github/workflows/android-ci.yml` para compilar y ejecutar
+  pruebas JVM al subir cambios o abrir solicitudes a `main`.
+- Faltan pruebas reales en un teléfono: Google OAuth, PIN/biometría, FCM y
+  subida Cloudinary con un preset unsigned `persona_android` en `r8iydbsg`.

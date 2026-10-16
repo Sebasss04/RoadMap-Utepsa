@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,10 +31,14 @@ import com.example.roadmaputepsa.services.PersonaService
 import com.example.roadmaputepsa.services.TokenNotificaciones
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Composable
 fun HomeScreen(usuario: FirebaseUser, onLogout: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var cerrandoSesion by remember { mutableStateOf(false) }
     var permiteNotificaciones by remember {
         mutableStateOf(
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
@@ -97,8 +102,27 @@ fun HomeScreen(usuario: FirebaseUser, onLogout: () -> Unit) {
             Spacer(Modifier.height(16.dp))
         }
 
-        Button(onClick = onLogout) {
-            Text("Cerrar sesión")
+        Button(
+            enabled = !cerrandoSesion,
+            onClick = {
+                cerrandoSesion = true
+                scope.launch {
+                    try {
+                        // Quitar el token de este dispositivo antes de cerrar Firebase.
+                        withTimeoutOrNull(4000L) {
+                            TokenNotificaciones.desvincularToken(usuario.uid)
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.w("FCM_TOKEN", "Fallo al desvincular notificaciones", e)
+                    } finally {
+                        onLogout()
+                    }
+                }
+            }
+        ) {
+            Text(if (cerrandoSesion) "Cerrando sesión..." else "Cerrar sesión")
         }
     }
 }
