@@ -1,71 +1,65 @@
 package com.example.roadmaputepsa
+
 import android.os.Build
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 
+/**
+ * Protege el acceso con un autenticador del sistema.
+ * Nunca interpreta la ausencia de PIN o biometría como acceso autorizado.
+ */
 fun autenticarConBiometria(
     activity: FragmentActivity,
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
-
-    val executor = androidx.core.content.ContextCompat.getMainExecutor(activity)
-
-    val biometricManager = BiometricManager.from(activity)
-
-    // Android 10 y anteriores no admiten STRONG | DEVICE_CREDENTIAL.
-    val biometria = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        BiometricManager.Authenticators.BIOMETRIC_STRONG
-    } else {
-        BiometricManager.Authenticators.BIOMETRIC_WEAK
-    }
-    val autenticadores = biometria or BiometricManager.Authenticators.DEVICE_CREDENTIAL
-    val resultado = biometricManager.canAuthenticate(autenticadores)
-
-    if (
-        resultado != BiometricManager.BIOMETRIC_SUCCESS
-    ) {
-        onError("Configura una huella, rostro o bloqueo de pantalla (PIN, patrón o contraseña) en los ajustes del teléfono.")
-        return
-    }
-
-    val promptInfo = BiometricPrompt.PromptInfo.Builder()
-        .setTitle("Autenticación")
-        .setSubtitle("Usa tu biometría, PIN, patrón o contraseña del teléfono")
-        .setAllowedAuthenticators(autenticadores)
-        .build()
-
-    val biometricPrompt = BiometricPrompt(
-        activity,
-        executor,
-        object : BiometricPrompt.AuthenticationCallback() {
-
-            override fun onAuthenticationSucceeded(
-                result: BiometricPrompt.AuthenticationResult
-            ) {
-                super.onAuthenticationSucceeded(result)
-
-                onSuccess()
-            }
-
-            override fun onAuthenticationError(
-                errorCode: Int,
-                errString: CharSequence
-            ) {
-                super.onAuthenticationError(
-                    errorCode,
-                    errString
-                )
-
-                onError(errString.toString())
-            }
-        }
-    )
-
     try {
-        biometricPrompt.authenticate(promptInfo)
+        val autenticadores = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        } else {
+            // En Android 10 y anteriores no se admite STRONG | DEVICE_CREDENTIAL.
+            BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        }
+
+        val estado = BiometricManager.from(activity).canAuthenticate(autenticadores)
+        if (estado != BiometricManager.BIOMETRIC_SUCCESS) {
+            onError(
+                "El dispositivo no tiene un método compatible configurado. " +
+                    "Configura PIN, patrón, contraseña o biometría en Ajustes."
+            )
+            return
+        }
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Verificación del dispositivo")
+            .setSubtitle("Usa tu huella, rostro, PIN, patrón o contraseña")
+            .setAllowedAuthenticators(autenticadores)
+            .build()
+
+        val prompt = BiometricPrompt(
+            activity,
+            ContextCompat.getMainExecutor(activity),
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(
+                    result: BiometricPrompt.AuthenticationResult
+                ) {
+                    super.onAuthenticationSucceeded(result)
+                    onSuccess()
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    onError(errString.toString())
+                }
+            }
+        )
+        prompt.authenticate(promptInfo)
     } catch (e: Exception) {
-        onError(e.localizedMessage ?: "No se pudo abrir la verificación del dispositivo")
+        // Incluye fallos en PromptInfo.build() además de authenticate().
+        onError(e.localizedMessage ?: "No se pudo abrir la verificación del dispositivo.")
     }
 }

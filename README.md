@@ -142,3 +142,32 @@ package Android.
   pruebas JVM al subir cambios o abrir solicitudes a `main`.
 - Faltan pruebas reales en un teléfono: Google OAuth, PIN/biometría, FCM y
   subida Cloudinary con un preset unsigned `persona_android` en `r8iydbsg`.
+
+## Diagnóstico del emulador y del botón Run
+
+El APK compila en GitHub Actions, pero esa compilación no ejecuta Android
+Studio ni un emulador. Si aparece "Error running 'app': Unknown error", primero
+comprueba la conexión e instalación de la aplicación con PowerShell:
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices -l
+.\gradlew.bat :app:assembleDebug
+.\gradlew.bat :app:installDebug
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" shell am start -n com.example.roadmaputepsa/.MainActivity
+```
+
+Para Google Sign-In utiliza preferentemente un AVD con imagen **Google Play**,
+abre Play Store, inicia sesión y configura el bloqueo en **Ajustes → Seguridad →
+Bloqueo de pantalla**. Si la verificación biométrica indica que el dispositivo
+no está configurado, la pantalla permite abrir los ajustes; después vuelve a
+la aplicación y pulsa **Intentar de nuevo**. No se permite omitir la verificación.
+
+Si `assembleDebug` funciona pero `installDebug` falla, revisa el emulador,
+su almacenamiento y la selección en el desplegable de dispositivos. Si la
+instalación funciona pero el proceso termina, busca `FATAL EXCEPTION` en
+Logcat. Un fallo `ApiException: 10` tras escoger Google puede indicar que
+falta registrar en Firebase el SHA-1 del almacén debug de **esta laptop**:
+`gradlew.bat signingReport`.
+
+Las advertencias `Unused namespace tools` y `Redundant label` del Manifest
+ya se limpiaron y no eran errores de compilación.

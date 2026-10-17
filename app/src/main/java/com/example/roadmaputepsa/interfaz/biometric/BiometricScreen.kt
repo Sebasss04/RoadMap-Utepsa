@@ -1,5 +1,8 @@
 package com.example.roadmaputepsa.interfaz.biometric
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +34,7 @@ fun BiometricScreen(onBiometricSuccess: () -> Unit) {
 
     fun solicitarVerificacion() {
         if (activity == null) {
-            mensajeError = "No se pudo acceder a la actividad del dispositivo."
+            mensajeError = "No se pudo acceder a la actividad de Android."
             return
         }
         cargando = true
@@ -49,23 +52,45 @@ fun BiometricScreen(onBiometricSuccess: () -> Unit) {
         )
     }
 
-    LaunchedEffect(activity) { solicitarVerificacion() }
+    LaunchedEffect(activity) {
+        solicitarVerificacion()
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Verificación de identidad", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = "Verificación de identidad",
+            style = MaterialTheme.typography.headlineSmall
+        )
         Spacer(Modifier.height(16.dp))
-        Text("Usa tu huella, rostro, PIN, patrón o contraseña del teléfono.")
+        Text("Usa tu huella, rostro, PIN, patrón o contraseña del dispositivo.")
         Spacer(Modifier.height(24.dp))
-        if (cargando) CircularProgressIndicator()
-        mensajeError?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
+
+        if (cargando) {
+            CircularProgressIndicator()
+        }
+        mensajeError?.let { error ->
+            Text(error, color = MaterialTheme.colorScheme.error)
             Spacer(Modifier.height(16.dp))
             Button(onClick = { solicitarVerificacion() }) {
                 Text("Intentar de nuevo")
+            }
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    try {
+                        activity?.startActivity(Intent(Settings.ACTION_SECURITY_SETTINGS))
+                    } catch (e: ActivityNotFoundException) {
+                        mensajeError = "Abre Ajustes y configura el bloqueo de pantalla."
+                    } catch (e: SecurityException) {
+                        mensajeError = "Abre Ajustes manualmente y configura el bloqueo."
+                    }
+                }
+            ) {
+                Text("Configurar PIN o patrón")
             }
         }
     }
